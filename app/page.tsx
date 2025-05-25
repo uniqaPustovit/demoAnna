@@ -1,101 +1,197 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+const appleProducts = [
+  { id: "IPHONE", name: "iPhone" },
+  { id: "IPAD", name: "iPad" },
+  { id: "MAC", name: "MAC" },
+  { id: "WATCH", name: "Watch" },
+  { id: "AIRPOD", name: "AirPods" },
+];
+
+const insuranceAmounts = {
+  IPHONE: [
+    { value: "250000", label: "250 000 HUF" },
+    { value: "350000", label: "350 000 HUF" },
+    { value: "450000", label: "450 000 HUF" },
+    { value: "550000", label: "550 000 HUF" },
+    { value: "650000", label: "650 000 HUF" },
+    { value: "1000000", label: "1 000 000 HUF" },
+  ],
+  IPAD: [
+    { value: "199000", label: "199 000 HUF" },
+    { value: "350000", label: "350 000 HUF" },
+    { value: "700000", label: "700 000 HUF" },
+    { value: "1600000", label: "1 600 000 HUF" },
+   
+  ],
+  MAC: [
+    { value: "350000", label: "350 000 HUF" },
+    { value: "500000", label: "500 000 HUF" },
+    { value: "700000", label: "700 000 HUF" },
+    { value: "1000000", label: "1 000 000 HUF" },
+    { value: "2000000", label: "1 500 000 HUF" },
+    { value: "3000000", label: "2 000 000 HUF" },
+  ],
+  WATCH: [
+    { value: "120000", label: "120 000 HUF" },
+    { value: "190000", label: "190 000 HUF" },
+    { value: "360000", label: "360 000 HUF" },
+    { value: "700000", label: "700 000 HUF" },
+   
+  ],
+  AIRPOD: [
+    { value: "85000", label: "85 000 HUF" },
+    { value: "120000", label: "120 000 HUF" },
+    { value: "300000", label: "300 000 HUF" },
+   
+  ],
+};
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [selectedProduct, setSelectedProduct] = useState("");
+  const [selectedAmount, setSelectedAmount] = useState("");
+  const [offers, setOffers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  const router = useRouter();
+
+  const handleGetOffers = async () => {
+    if (!selectedProduct || !selectedAmount) return;
+
+    setLoading(true);
+    try {
+      const response = await fetch("/api/offers", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          product: selectedProduct,
+          insuranceAmount: selectedAmount,
+        }),
+      });
+
+      const data = await response.json();
+      setOffers(data.CompositeOfferItems);
+    } catch (error) {
+      console.error("Error fetching offers:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleProductChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedProduct(e.target.value);
+    setSelectedAmount(""); // Reset insurance amount when product changes
+  };
+
+  const handleGetContract = (offer: any) => {
+    router.push(`/create?offer=${encodeURIComponent(JSON.stringify(offer))}`);
+  };
+
+  return (
+    <main className="min-h-screen p-8">
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-3xl font-bold mb-8">Apple Products Insurance</h1>
+
+        <div className="mb-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Select Product
+            </label>
+            <select
+              value={selectedProduct}
+              onChange={handleProductChange}
+              className="w-full p-2 border rounded-md"
+            >
+              <option value="">Select a product</option>
+              {appleProducts.map((product) => (
+                <option key={product.id} value={product.id}>
+                  {product.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {selectedProduct && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Insurance Amount
+              </label>
+              <select
+                value={selectedAmount}
+                onChange={(e) => setSelectedAmount(e.target.value)}
+                className="w-full p-2 border rounded-md"
+              >
+                <option value="">Select insurance amount</option>
+                {insuranceAmounts[
+                  selectedProduct as keyof typeof insuranceAmounts
+                ]?.map((amount) => (
+                  <option key={amount.value} value={amount.value}>
+                    {amount.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <button
+            onClick={handleGetOffers}
+            disabled={!selectedProduct || !selectedAmount || loading}
+            className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 disabled:bg-gray-400"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            {loading ? "Loading..." : "Get Insurance Offers"}
+          </button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+
+        {offers.length > 0 && (
+          <div className="mt-8">
+            <h2 className="text-2xl font-semibold mb-4">
+              Available Insurance Offers
+            </h2>
+            <div className="space-y-4">
+              {offers.map(
+                (offer, index) => (
+                  // console.log(offer),
+                  (
+                    <div key={index} className="border p-4 rounded-md">
+                      {offer.OfferItems.map((item: any) => (
+                        <div key={item.Pcode}>
+                          {" "}
+                          <h3 className="font-semibold">{item.Pcode}</h3>
+                          <p className="text-gray-600">{item.Value}</p>
+                        </div>
+                      ))}
+                      <p className="text-green-600 font-bold mt-2">
+                        {" "}
+                        price:{" "}
+                        {
+                          offer.CalcItems.find(
+                            (item: any) => item.Code === "2"
+                          )?.Value
+                        }{" "}
+                        HUF
+                      </p>
+                      <button
+                        onClick={() => handleGetContract(offer)}
+                        disabled={
+                          !selectedProduct || !selectedAmount || loading
+                        }
+                        className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 disabled:bg-gray-400 mt-2"
+                      >
+                        {loading ? "Loading..." : "Get an insurance contract"}
+                      </button>
+                    </div>
+                  )
+                )
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </main>
   );
 }
