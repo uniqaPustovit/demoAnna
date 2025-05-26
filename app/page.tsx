@@ -169,9 +169,9 @@ export default function Home() {
                         {" "}
                         price:{" "}
                         {
-                          offer.CalcItems.find(
+                          Number(offer.CalcItems.find(
                             (item: any) => item.Code === "2"
-                          )?.Value
+                          )?.Value).toLocaleString()
                         }{" "}
                         HUF
                       </p>
