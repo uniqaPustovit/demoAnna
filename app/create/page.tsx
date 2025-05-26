@@ -4,10 +4,11 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-
 const CreateContractPage = () => {
+  const [loading, setLoading] = useState(false);
   const searchParams = useSearchParams();
   const [offer, setOffer] = useState<any>(null);
+  const [importResult, setImportResult] = useState<any>(null);
   const [device, setDevice] = useState<any>(null);
   const [premium, setPremium] = useState<any>(null);
   const [premiumSum, setPremiumSum] = useState<any>(null);
@@ -117,18 +118,24 @@ const CreateContractPage = () => {
         // console.log(premium);
         setFormData({
           ...formData,
-          Sum_Insured: parsedOffer.CalcItems.find(
+          Sum_Insured: Number(parsedOffer.CalcItems.find(
             (item: any) => item.Code == "2"
-          )?.Value,
-          Gross_Premium_in_HUF: parsedOffer.InputParameters.find(
+          )?.Value).toLocaleString(),
+          Gross_Premium_in_HUF: Number(parsedOffer.InputParameters.find(
             (item: any) => item.Code == "SUM_INSURED_MAX"
-          )?.Value,
+          )?.Value).toLocaleString(),
           Device_Group: parsedOffer.InputParameters.find(
             (item: any) => item.Code == "INSURED_DEVICES"
           )?.Value,
           ID_of_Package: parsedOffer.OfferItems.find(
             (item: any) => item.Pcode == "PACKAGE"
           )?.Code,
+          Deductible:Number(parsedOffer.CalcItems.find(
+            (item: any) => item.Code == "K5"
+          )?.Value).toLocaleString(),
+          Commission:Number(parsedOffer.CalcItems.find(
+            (item: any) => item.Code == "K7"
+          )?.Value).toLocaleString(),
         });
         // console.log(parsedOffer);
         // Optionally pre-fill some fields from the offer data
@@ -171,13 +178,14 @@ const CreateContractPage = () => {
   };
 // console.log(formData);
   const handleSubmit = async (e: React.FormEvent) => {
+      setLoading(true)
     e.preventDefault();
     // You would typically combine offer data and form data here
     const submissionData = {
       ibt_id: "ANNA",
       icd_dbeg: formData.Date_of_Start_a_Cover,
       icd_vplcode: period,
-      icd_externalid: "asassx",
+      icd_externalid: Date.now(),
       idp: [
         {
           code: "PACKAGE",
@@ -226,25 +234,30 @@ const CreateContractPage = () => {
       if (response.ok) {
         const result = await response.json();
         console.log("Contract imported successfully:", result);
+        setImportResult(result);
         // Handle successful import (e.g., show success message, navigate to a confirmation page)
       } else {
         const errorData = await response.json();
         console.error("Failed to import contract:", errorData);
+        setImportResult(errorData);
         // Handle error (e.g., show error message)
       }
     } catch (error) {
       console.error("Error submitting form:", error);
+      setImportResult({ error: error instanceof Error ? error.message : "Unknown error occurred" });
       // Handle network errors
+    } finally {
+      setLoading(false);
     }
   };
 
   if (!offer) {
     return <div>Loading offer details...</div>; // Or handle error if offer is missing
   }
-
+// console.log(loading);
   // Basic rendering - you'll likely want to style this better
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 max-w-2xl">
         <button onClick={() => router.push("/")} className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 disabled:bg-gray-400 mt-2  mb-4">back to offer</button>
       <h1 className="text-2xl font-bold mb-4">Create Insurance Contract</h1>
 
@@ -293,12 +306,20 @@ const CreateContractPage = () => {
         ))}
 
         <button
-          type="submit"
-          className="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600"
+          type="submit"disabled={loading}
+          className="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 disabled:bg-gray-400 mt-2"
         >
-          Submit Contract
+         {loading ? "Loading..." : "Submit Contract"}
         </button>
       </form>
+
+      {/* Display Import Result */}
+      {importResult && (
+        <div className="mt-8 p-4 border rounded-md bg-gray-100">
+          <h2 className="text-xl font-semibold mb-2">Import Result:</h2>
+          <pre className="whitespace-pre-wrap break-words">{JSON.stringify(importResult, null, 2)}</pre>
+        </div>
+      )}
     </div>
   );
 };

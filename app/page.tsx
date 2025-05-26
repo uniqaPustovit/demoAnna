@@ -167,10 +167,20 @@ export default function Home() {
                       ))}
                       <p className="text-green-600 font-bold mt-2">
                         {" "}
-                        price:{" "}
+                        Price:{" "}
                         {
                           Number(offer.CalcItems.find(
                             (item: any) => item.Code === "2"
+                          )?.Value).toLocaleString()
+                        }{" "}
+                        HUF
+                      </p>
+                      <p className="text-green-600 font-bold mt-2">
+                        {" "}
+                        Deductible:{" "}
+                        {
+                          Number(offer.CalcItems.find(
+                            (item: any) => item.Code === "K5"
                           )?.Value).toLocaleString()
                         }{" "}
                         HUF

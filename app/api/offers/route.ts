@@ -93,7 +93,7 @@ export async function POST(request: Request) {
       )
       // console.log(response.json())
       const data11 = await response.json()
-      console.log(data11);
+      // console.log(data11);
       const data22 = {
         "CompositeOfferItems": [
             {
