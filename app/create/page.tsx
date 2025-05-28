@@ -20,6 +20,7 @@ const CreateContractPage = () => {
   const [formData, setFormData] = useState({
     // ID_Of_Certificate_Policy: "",
     // ID_Of_Product: "",
+    ID_of_Shop: "091000",
     ID_of_Package: "",
     Birth_Date_Personal: "",
     Name_Personal: "",
@@ -39,7 +40,6 @@ const CreateContractPage = () => {
     Date_of_End_a_Cover: "",
     Sum_Insured: "",
     Deductible: "",
-    // ID_of_Shop: "",
     // ID_of_Seller: "",
   });
 
@@ -183,6 +183,7 @@ const CreateContractPage = () => {
     e.preventDefault();
     // You would typically combine offer data and form data here
     const submissionData = {
+      agcode: formData.ID_of_Shop,
       ibt_id: "ANNA",
       icd_dbeg: formData.Date_of_Start_a_Cover,
       icd_vplcode: period,
@@ -321,7 +322,10 @@ const CreateContractPage = () => {
               id={key}
               value={(formData as any)[key]}
               onChange={handleInputChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+              disabled={key == "ID_of_Shop" ? true : false}
+              className={
+                "mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+              }
             />
           </div>
         ))}
