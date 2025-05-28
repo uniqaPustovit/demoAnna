@@ -12,15 +12,14 @@ const CreateContractPage = () => {
   const [device, setDevice] = useState<any>(null);
   const [premium, setPremium] = useState<any>(null);
   const [premiumSum, setPremiumSum] = useState<any>(null);
-
   const [period, setPeriod] = useState<any>(null);
   const [packege, setPackege] = useState<any>(null);
 
   const router = useRouter();
 
   const [formData, setFormData] = useState({
-    ID_Of_Certificate_Policy: "",
-    ID_Of_Product: "",
+    // ID_Of_Certificate_Policy: "",
+    // ID_Of_Product: "",
     ID_of_Package: "",
     Birth_Date_Personal: "",
     Name_Personal: "",
@@ -40,8 +39,8 @@ const CreateContractPage = () => {
     Date_of_End_a_Cover: "",
     Sum_Insured: "",
     Deductible: "",
-    ID_of_Shop: "",
-    ID_of_Seller: "",
+    // ID_of_Shop: "",
+    // ID_of_Seller: "",
   });
 
   const [fetchData, setFetchData] = useState({
@@ -118,24 +117,26 @@ const CreateContractPage = () => {
         // console.log(premium);
         setFormData({
           ...formData,
-          Sum_Insured: Number(parsedOffer.CalcItems.find(
-            (item: any) => item.Code == "2"
-          )?.Value).toLocaleString(),
-          Gross_Premium_in_HUF: Number(parsedOffer.InputParameters.find(
-            (item: any) => item.Code == "SUM_INSURED_MAX"
-          )?.Value).toLocaleString(),
+          Sum_Insured: Number(
+            parsedOffer.CalcItems.find((item: any) => item.Code == "2")?.Value
+          ).toLocaleString(),
+          Gross_Premium_in_HUF: Number(
+            parsedOffer.InputParameters.find(
+              (item: any) => item.Code == "SUM_INSURED_MAX"
+            )?.Value
+          ).toLocaleString(),
           Device_Group: parsedOffer.InputParameters.find(
             (item: any) => item.Code == "INSURED_DEVICES"
           )?.Value,
           ID_of_Package: parsedOffer.OfferItems.find(
             (item: any) => item.Pcode == "PACKAGE"
           )?.Code,
-          Deductible:Number(parsedOffer.CalcItems.find(
-            (item: any) => item.Code == "K5"
-          )?.Value).toLocaleString(),
-          Commission:Number(parsedOffer.CalcItems.find(
-            (item: any) => item.Code == "K7"
-          )?.Value).toLocaleString(),
+          Deductible: Number(
+            parsedOffer.CalcItems.find((item: any) => item.Code == "K5")?.Value
+          ).toLocaleString(),
+          Commission: Number(
+            parsedOffer.CalcItems.find((item: any) => item.Code == "K7")?.Value
+          ).toLocaleString(),
         });
         // console.log(parsedOffer);
         // Optionally pre-fill some fields from the offer data
@@ -176,9 +177,9 @@ const CreateContractPage = () => {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
-// console.log(formData);
+  // console.log(formData);
   const handleSubmit = async (e: React.FormEvent) => {
-      setLoading(true)
+    setLoading(true);
     e.preventDefault();
     // You would typically combine offer data and form data here
     const submissionData = {
@@ -199,11 +200,23 @@ const CreateContractPage = () => {
           code: "SUM_INSURED_MAX",
           value: premiumSum,
         },
+        {
+          code: "DEVICE_NAME",
+          value: formData.Device_Name,
+        },
+        {
+          code: "DEVICE_SERIALNO",
+          value: formData.Device_SerialNo,
+        },
+        {
+          code: "VALUE_DEVICE",
+          value: formData.Value_of_the_device,
+        },
       ],
       objs: {
         mpd: [
           {
-            code: "2733912859",
+            code: "9999999999",
             namelat: formData.Name_Personal,
             namelatshort: formData.Surname_Personal,
             bdate: formData.Birth_Date_Personal,
@@ -244,7 +257,10 @@ const CreateContractPage = () => {
       }
     } catch (error) {
       console.error("Error submitting form:", error);
-      setImportResult({ error: error instanceof Error ? error.message : "Unknown error occurred" });
+      setImportResult({
+        error:
+          error instanceof Error ? error.message : "Unknown error occurred",
+      });
       // Handle network errors
     } finally {
       setLoading(false);
@@ -254,11 +270,16 @@ const CreateContractPage = () => {
   if (!offer) {
     return <div>Loading offer details...</div>; // Or handle error if offer is missing
   }
-// console.log(loading);
+  // console.log(loading);
   // Basic rendering - you'll likely want to style this better
   return (
     <div className="container mx-auto p-4 max-w-2xl">
-        <button onClick={() => router.push("/")} className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 disabled:bg-gray-400 mt-2  mb-4">back to offer</button>
+      <button
+        onClick={() => router.push("/")}
+        className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 disabled:bg-gray-400 mt-2  mb-4"
+      >
+        back to offer
+      </button>
       <h1 className="text-2xl font-bold mb-4">Create Insurance Contract</h1>
 
       {/* <div className="mb-4">
@@ -306,10 +327,11 @@ const CreateContractPage = () => {
         ))}
 
         <button
-          type="submit"disabled={loading}
+          type="submit"
+          disabled={loading}
           className="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 disabled:bg-gray-400 mt-2"
         >
-         {loading ? "Loading..." : "Submit Contract"}
+          {loading ? "Loading..." : "Submit Contract"}
         </button>
       </form>
 
@@ -317,7 +339,9 @@ const CreateContractPage = () => {
       {importResult && (
         <div className="mt-8 p-4 border rounded-md bg-gray-100">
           <h2 className="text-xl font-semibold mb-2">Import Result:</h2>
-          <pre className="whitespace-pre-wrap break-words">{JSON.stringify(importResult, null, 2)}</pre>
+          <pre className="whitespace-pre-wrap break-words">
+            {JSON.stringify(importResult, null, 2)}
+          </pre>
         </div>
       )}
     </div>
