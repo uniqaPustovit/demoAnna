@@ -9,11 +9,13 @@ const CreateContractPage = () => {
   const searchParams = useSearchParams();
   const [offer, setOffer] = useState<any>(null);
   const [importResult, setImportResult] = useState<any>(null);
+  const [contractData, setContractData] = useState<string | null>(null);
   const [device, setDevice] = useState<any>(null);
   const [premium, setPremium] = useState<any>(null);
   const [premiumSum, setPremiumSum] = useState<any>(null);
   const [period, setPeriod] = useState<any>(null);
   const [packege, setPackege] = useState<any>(null);
+  const [showPdf, setShowPdf] = useState(false);
 
   const router = useRouter();
 
@@ -223,6 +225,10 @@ const CreateContractPage = () => {
             bdate: formData.Birth_Date_Personal,
             advp: [
               {
+                code: "POST_CODE",
+                value: formData.Post_Code,
+              },
+              {
                 code: "TOWN",
                 value: formData.Town,
               },
@@ -263,6 +269,42 @@ const CreateContractPage = () => {
           error instanceof Error ? error.message : "Unknown error occurred",
       });
       // Handle network errors
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGetContract = async () => {
+    setLoading(true);
+    if (!importResult?.Result.DNo) {
+      console.error("No contract number available");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/iedoc/getprintform", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          boType: "icd",
+          boNumber: importResult.Result.DNo,
+          pfCode: "01",
+          createNew: true,
+          deferred: false,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setContractData(result);
+        setShowPdf(true);
+      } else {
+        console.error("Failed to get contract");
+      }
+    } catch (error) {
+      console.error("Error getting contract:", error);
     } finally {
       setLoading(false);
     }
@@ -346,6 +388,25 @@ const CreateContractPage = () => {
           <pre className="whitespace-pre-wrap break-words">
             {JSON.stringify(importResult, null, 2)}
           </pre>
+         { importResult.Result.Stat == "30" && <button
+            onClick={handleGetContract}
+            disabled={loading}
+            className="mt-4 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 disabled:bg-gray-400 mt-2"
+          >
+           {loading ? "Loading..." : "Get PrintForm"}
+          </button>}
+        </div>
+      )}
+
+      {/* Display PDF */}
+      {showPdf && contractData && (
+        <div className="mt-8 p-4 border rounded-md bg-gray-100">
+          <h2 className="text-xl font-semibold mb-2">Contract PDF:</h2>
+          <iframe
+            src={`data:application/pdf;base64,${contractData}`}
+            className="w-full h-[800px] border-0"
+            title="Contract PDF"
+          />
         </div>
       )}
     </div>
