@@ -369,7 +369,8 @@ const CreateContractPage = () => {
                 key == "Deductible" ||
                 key == "Sum_Insured" ||
                 key == "Commission" ||
-                key == "Commission_TPA"
+                key == "Commission_TPA" ||
+                key == "Device_Group"
                   ? true
                   : false
               }
