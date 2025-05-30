@@ -364,7 +364,15 @@ const CreateContractPage = () => {
               id={key}
               value={(formData as any)[key]}
               onChange={handleInputChange}
-              disabled={key == "ID_of_Shop" ? true : false}
+              disabled={
+                key == "ID_of_Shop" ||
+                key == "Deductible" ||
+                key == "Sum_Insured" ||
+                key == "Commission" ||
+                key == "Commission_TPA"
+                  ? true
+                  : false
+              }
               className={
                 "mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
               }
@@ -388,13 +396,15 @@ const CreateContractPage = () => {
           <pre className="whitespace-pre-wrap break-words">
             {JSON.stringify(importResult, null, 2)}
           </pre>
-         { importResult.Result.Stat == "30" && <button
-            onClick={handleGetContract}
-            disabled={loading}
-            className="mt-4 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 disabled:bg-gray-400 mt-2"
-          >
-           {loading ? "Loading..." : "Get PrintForm"}
-          </button>}
+          {importResult.Result.Stat == "30" && (
+            <button
+              onClick={handleGetContract}
+              disabled={loading}
+              className="mt-4 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 disabled:bg-gray-400 mt-2"
+            >
+              {loading ? "Loading..." : "Get PrintForm"}
+            </button>
+          )}
         </div>
       )}
 
